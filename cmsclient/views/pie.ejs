@@ -1,0 +1,70 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>Pie Chart</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+        integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<body>
+    <nav class="navbar navbar-dark bg-warning">
+        <a class="navbar-brand" href="">
+            <i class="fas fa-chart-pie"></i> Pie Chart
+        </a>
+        <form class="form-inline">
+            <a class="btn btn-warning" href="/"><i class="fas fa-layer-group"></i> Dashboard</a>
+        </form>
+    </nav>
+    <br>
+    <div class="container">
+        <div id="chart_div"></div>
+    </div>
+
+
+
+
+    <script type="text/javascript">
+        google.charts.load("current", { packages: ["corechart"] });
+        google.charts.setOnLoadCallback(drawChart);
+        function drawChart() {
+
+            $.ajax({
+                url: 'http://localhost:3001/api/data',
+                method: 'GET'
+            })
+                .then(data => {
+                    // console.log(data);
+
+                    let listdata = [];
+                    listdata.push(['letter', 'frequency']);
+                    data.forEach(item => {
+                        let itemchart = []
+                        itemchart.push(item.letter)
+                        itemchart.push(item.frequency * 100)
+                        listdata.push(itemchart)
+                    });
+                    console.log(JSON.stringify(listdata));
+                    var data = google.visualization.arrayToDataTable(listdata);
+
+                    var options = {
+                        title: 'Pie Diagram of Data',
+                        is3D: true,
+                    };
+
+                    var chart = new google.visualization.PieChart(document.getElementById('piechart_3d'));
+                    chart.draw(data, options);
+                })
+        }
+    </script>
+
+
+    <body>
+        <div id="piechart_3d" style="width: 900px; height: 500px;"></div>
+    </body>
+
+</html>

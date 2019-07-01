@@ -1,0 +1,238 @@
+<% include partials/header %>
+
+
+<!-- form add -->
+<div class="container">
+    <div class="jumbotron">
+        <button id="button-add" type="submit" name="add" class="btn btn-primary"><i class="fas fa-plus"></i>
+            Add</button>
+        <br><br>
+        <!-- <div id="input-alert" class="alert alert-danger" role="alert"></div> -->
+        <div id="form-add" class="card" style="background:rgb(206, 167, 206)">
+            <div class="card-body">
+
+                <form class="form-inline" id="add-form">
+                    <input id="data-id" type="hidden" value="" />
+                    <div class="form-group">
+                        <label class="col-sm-2 col-form-label">Letter</label>
+                        <div class="col-sm-5">
+                            <input type="text" name="addletter" class="form-control" placeholder="Letter"
+                                id="add-letter" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-3 col-form-label">Frequency</label>
+                        <div class="col-sm-5">
+                            <input type="text" name="addfrequency" class="form-control" placeholder="0.000"
+                                id="add-frequency" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save</button>
+                </form>
+            </div>
+        </div>
+        <br>
+
+        <h2><b>Search</b></h2>
+        <hr>
+        <div id="form-add" class="card" style="background:rgb(213, 248, 143)">
+            <div class="card-body">
+                <form class="form-inline">
+
+                    <div class="form-group">
+                        <label class="col-sm-2 col-form-label">Letter</label>
+                        <div class="col-sm-5">
+                            <input type="text" name="searchletter" class="form-control" placeholder="Letter"
+                                id="search-letter">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-3 col-form-label">Frequency</label>
+                        <div class="col-sm-5">
+                            <input type="text" name="saearchfrequency" class="form-control" placeholder="0.000"
+                                id="search-frequency">
+                        </div>
+                    </div>
+            </div>
+        </div>
+        </form>
+        <br>
+
+        <!-- table -->
+        <table class="table table-striped" id="dataTable">
+            <thead tyle="border-bottom: none">
+                <th>#</th>
+                <th>ID</th>
+                <th>Letter</th>
+                <th>Frequency</th>
+                <th style="text-align:center">Action</th>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+
+    <script type="text/javascript">
+        const API_URL = 'http://localhost:3001/api/data'
+        const token = '<%= data.token %>'
+
+        const listData = (data) => {
+            let html = '';
+            data.forEach((item, i) => {
+                html += `<tr>
+                     <td>${i + 1}</td>
+                     <td>${item._id}</td>
+                     <td>${item.letter}</td>
+                     <td>${item.frequency}</td>
+                     <td style="text-align:center">
+                     <button class="btn btn-success btn-edit" data-id="${item._id}"
+                        data-letter="${item.letter}" data-frequency="${item.frequency}"><i class="fas fa-pencil-alt"></i> Update</button>
+                     <button class="btn btn-danger btn-hapus" data-id="${item._id}"><i class="fas fa-trash-alt"></i> Delete</button></td>
+                  </tr>`
+            })
+            $('#dataTable tbody').html(html)
+        }
+
+        // ========= menampilkan data ditable ========
+        const loadData = () => {
+            $.ajax({
+                headers: { 'x-access-token': token },
+                url: `${API_URL}`,
+                method: 'GET',
+                success: function (result) {
+                    listData(result);
+                }
+            })
+        }
+
+        // ================== find ==================
+        const findData = () => {
+            $.ajax({
+                headers: { 'x-access-token': token },
+                url: `${API_URL}/search`,
+                method: 'POST',
+                data: {
+                    letter: $('#search-letter').val(),
+                    frequency: $('#search-frequency').val()
+                },
+                success: function (result) {
+                    listData(result);
+                }
+            })
+        }
+
+        // ==================== save =============
+        const saveData = () => {
+            let id = $('#data-id').val();
+            let letter = $('#add-letter').val();
+            let frequency = $('#add-frequency').val()
+
+            if (!id) {
+                $.ajax({
+                    headers: { 'x-access-token': token },
+                    url: `${API_URL}`,
+                    method: 'POST',
+                    data: {
+                        letter,
+                        frequency
+                    },
+                    success: function (result) {
+                        loadData();
+                        $('#alert').addClass("alert alert-info")
+                        $('#alert').text('Data Have been Added')
+                        $('#alert').fadeIn()
+                        $('#alert').fadeOut(6000, function () {
+                            $('#alert').removeAttr('class');
+                            $('#alert').text('')
+                        })
+                    }
+                })
+            } else {
+                $.ajax({
+                    headers: { 'x-access-token': token },
+                    url: `${API_URL}/${id}`,
+                    method: 'PUT',
+                    data: {
+                        letter,
+                        frequency
+                    },
+                    success: function (result) {
+                        loadData();
+                        $('#alert').addClass("alert alert-success")
+                        $('#alert').text('Data Have been Updated')
+                        $('#alert').fadeIn()
+                        $('#alert').fadeOut(6000, function () {
+                            $('#alert').removeAttr('class');
+                            $('#alert').text('')
+                        })
+                    }
+                })
+            }
+            $('#data-id').val('')
+        }
+
+        // =============== add =====================
+        $(document).ready(function () {
+            loadData()
+            $('#alert').hide()
+            $('#form-add').hide()
+            $('#button-add').click(function () {
+                $('#form-add').toggle()
+            })
+            $('#search-letter, #search-frequency').keyup(() => {
+                findData();
+            })
+
+            $('#add-form').submit((e) => {
+                e.preventDefault();
+                saveData();
+                $('#add-letter').val('')
+                $('#add-frequency').val('')
+                $('#form-add').fadeOut(1000)
+            })
+
+            // =================== edit ==================
+            $('#dataTable tbody').on('click', '.btn-edit', (e) => {
+                $('#add-letter').val($(e.target).attr('data-letter'));
+                $('#add-frequency').val($(e.target).attr('data-frequency'));
+                $('#data-id').val($(e.target).attr('data-id'));
+                if ($('#form-add').is(':hidden')) {
+                    $('#form-add').toggle()
+                } else {
+                    $('#form-add').show()
+                }
+            })
+
+            // ================== delete ===================
+            $('#dataTable tbody').on('click', '.btn-hapus', (e) => {
+                var result = confirm("Are you sure to delete...");
+                if (result) {
+                    //Logic to delete the item
+                    let id = $(e.target).attr('data-id');
+                    $.ajax({
+                        headers: { 'x-access-token': token },
+                        url: `${API_URL}/${id}`,
+                        method: 'DELETE',
+                        success: function (result) {
+                            loadData();
+                            $('#alert').addClass("alert alert-danger")
+                            $('#alert').text('Data Have been Deleted')
+                            $('#alert').fadeIn()
+                            $('#alert').fadeOut(6000, function () {
+                                $('#alert').removeAttr('class');
+                                $('#alert').text('')
+                            })
+                        }
+                    })
+                }
+            })
+        })
+    </script>
+</div>
+
+
+<% include partials/footer %>

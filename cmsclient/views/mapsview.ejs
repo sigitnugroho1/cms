@@ -1,0 +1,65 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>Maps</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+        integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<body>
+    <nav class="navbar navbar-dark bg-success">
+        <a class="navbar-brand" href="">
+            <i class="fas fa-globe-americas"></i> Maps
+        </a>
+        <form class="form-inline">
+            <a class="btn btn-warning" href="/"><i class="fas fa-layer-group"></i> Dashboard</a>
+        </form>
+    </nav>
+    <br>
+    <br style="line-height:10px">
+    <div class="container-fluid">
+        <div id="map_div" style="height: 500px"></div>
+    </div>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load("current", {
+            "packages": ["map"],
+            // Note: you will need to get a mapsApiKey for your project.
+            // See: https://developers.google.com/chart/interactive/docs/basic_load_libs#load-settings
+            "mapsApiKey": "AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY"
+        });
+        google.charts.setOnLoadCallback(drawChart);
+        function drawChart() {
+            $.ajax({
+                url: 'http://localhost:3001/api/maps',
+                method: 'GET'
+            })
+                .then(data => {
+                    let listdata = [];
+                    listdata.push(['Lat', 'Long', 'Name']);
+                    data.forEach(item => {
+                        let itemchart = []
+                        itemchart.push(item.lat)
+                        itemchart.push(item.lng)
+                        itemchart.push(item.title)
+                        listdata.push(itemchart)
+                    });
+                    var data = google.visualization.arrayToDataTable(listdata);
+                    var map = new google.visualization.Map(document.getElementById('map_div'));
+                    map.draw(data, {
+                        showTooltip: true,
+                        showInfoWindow: true
+                    });
+                })
+        }
+    </script>
+
+
+</body>
+
+</html>
